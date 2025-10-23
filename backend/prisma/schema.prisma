@@ -1,0 +1,423 @@
+// Medical Evaluation System - Database Schema
+// Multi-tenant architecture with GDPR compliance
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============== Multi-tenant & User Management ==============
+
+model Clinic {
+  id              String   @id @default(uuid())
+  name            String
+  address         String
+  phone           String?
+  email           String?
+  registrationNumber String? @unique // Clinic registration number
+
+  // GDPR Data Controller Information
+  dataControllerName    String?
+  dataControllerContact String?
+
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users           User[]
+  patients        Patient[]
+  evaluations     MedicalEvaluation[]
+  auditLogs       AuditLog[]
+
+  @@index([name])
+}
+
+model User {
+  id              String   @id @default(uuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id])
+
+  email           String   @unique
+  passwordHash    String
+
+  firstName       String
+  lastName        String
+  role            UserRole @default(DOCTOR)
+
+  isActive        Boolean  @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  evaluations     MedicalEvaluation[]
+  auditLogs       AuditLog[]
+
+  @@index([clinicId])
+  @@index([email])
+}
+
+enum UserRole {
+  ADMIN           // Full system access
+  DOCTOR          // Can create and view evaluations
+  NURSE           // Can create evaluations
+  RECEPTIONIST    // Can only view
+}
+
+// ============== Patient Information ==============
+
+model Patient {
+  id              String   @id @default(uuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id])
+
+  // Personal Information
+  firstName       String
+  lastName        String
+  cnp             String   // Romanian Personal Identification Number
+
+  // Address
+  address         String
+  city            String?
+  county          String?
+
+  // ID Document
+  idType          String   // B.I. or C.I.
+  idSeries        String
+  idNumber        String
+
+  // Contact
+  phone           String?
+  email           String?
+
+  // GDPR Consent
+  gdprConsent     Boolean  @default(false)
+  gdprConsentDate DateTime?
+
+  // Archiving
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  evaluations     MedicalEvaluation[]
+
+  @@unique([clinicId, cnp])
+  @@index([clinicId])
+  @@index([lastName, firstName])
+  @@index([cnp])
+}
+
+// ============== Medical Evaluation ==============
+
+model MedicalEvaluation {
+  id              String   @id @default(uuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id])
+
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+
+  userId          String   // Doctor/Staff who created the evaluation
+  user            User     @relation(fields: [userId], references: [id])
+
+  // Form metadata
+  evaluationType  String   @default("STOMATOLOGY") // STOMATOLOGY, GENERAL_SURGERY, AESTHETIC, etc.
+  evaluationDate  DateTime @default(now())
+
+  // Declarant Information (who filled the form)
+  declarantType   DeclarantType
+  declarantName   String?  // If representative or family member
+  declarantRelation String? // Relationship to patient
+
+  // === SECTION 1: Pregnancy (for female patients) ===
+  isPossiblyPregnant  Boolean?
+  pregnancyWeeks      Int?
+  isInMenstrualCycle  Boolean?
+
+  // === SECTION 2: Allergies ===
+  hasAllergies        Boolean  @default(false)
+  allergiesDetails    String?  @db.Text
+
+  // === SECTION 3: Current Medications ===
+  isOnMedication      Boolean  @default(false)
+  medicationDetails   String?  @db.Text
+
+  // Antibiotics (last 2 weeks)
+  recentAntibiotics   Boolean  @default(false)
+  antibioticsDetails  String?
+
+  // Anticoagulants
+  onAnticoagulants    Boolean  @default(false)
+  anticoagulantName   String?
+  anticoagulantDose   String?
+  inrValue            String?
+
+  // Bisphosphonates
+  onBisphosphonates   Boolean  @default(false)
+  bisphosphonateName  String?
+  bisphosphonateDose  String?
+  bisphosphonateRoute BisphosphonateRoute?
+  bisphosphonateDuration String? // months/years
+  betaCrossLaps       String?
+
+  // === SECTION 4: Medical History ===
+  hasMedicalHistory   Boolean  @default(false)
+
+  // Congenital diseases
+  congenitalDiseases  String?  @db.Text
+
+  // Professional diseases
+  professionalDiseases String? @db.Text
+
+  // Heart diseases
+  hasHeartDisease     Boolean  @default(false)
+  anginaPectoris      Boolean  @default(false)
+  myocardialInfarction Boolean @default(false)
+  infarctionDate      String?
+  arrhythmia          Boolean  @default(false)
+  heartBlock          Boolean  @default(false)
+  heartFailure        Boolean  @default(false)
+  nyhaClass           String?  // NYHA classification
+  valvulopathy        Boolean  @default(false)
+  valvulopathyType    String?
+  infectiousEndocarditis Boolean @default(false)
+  cardiacSurgery      Boolean  @default(false)
+  cardiacSurgeryDetails String? @db.Text
+  otherHeartConditions String?  @db.Text
+
+  // Vascular diseases
+  hasVascularDisease  Boolean  @default(false)
+  obliterativeArteriopathy Boolean @default(false)
+  thrombophlebitis    Boolean  @default(false)
+  hypotension         Boolean  @default(false)
+  hypotensionBloodPressure String?
+  hypotensionMedication String? @db.Text
+  hypertension        Boolean  @default(false)
+  maxBloodPressure    String?  // mmHg (deprecated - use hypertensionBloodPressure)
+  hypertensionBloodPressure String?
+  hypertensionMedication String? @db.Text
+  stroke              Boolean  @default(false)
+  strokeDate          String?
+  otherVascularConditions String? @db.Text
+
+  // Respiratory diseases
+  hasRespiratoryDisease Boolean @default(false)
+  bronchialAsthma     Boolean  @default(false)
+  emphysema           Boolean  @default(false)
+  chronicBronchitis   Boolean  @default(false)
+  tuberculosis        Boolean  @default(false)
+  tbTreatment         String?
+  otherRespiratoryConditions String? @db.Text
+
+  // Digestive diseases
+  hasDigestiveDisease Boolean  @default(false)
+  gastritisUlcer      Boolean  @default(false)
+  otherDigestiveConditions String? @db.Text
+
+  // Liver diseases
+  hasLiverDisease     Boolean  @default(false)
+  hepaticSteatosis    Boolean  @default(false)
+  chronicHepatitis    Boolean  @default(false)
+  cirrhosis           Boolean  @default(false)
+  otherLiverConditions String? @db.Text
+
+  // Kidney diseases
+  hasKidneyDisease    Boolean  @default(false)
+  renalFailure        Boolean  @default(false)
+  onHemodialysis      Boolean  @default(false)
+  hemodialysisDetails String?
+
+  // Diabetes
+  hasDiabetes         Boolean  @default(false)
+  diabetesInsulin     Boolean  @default(false)
+  diabetesOralMeds    Boolean  @default(false)
+
+  // Endocrine diseases
+  hasEndocrineDisease Boolean  @default(false)
+  hypothyroidism      Boolean  @default(false)
+  hyperthyroidism     Boolean  @default(false)
+  otherEndocrineConditions String? @db.Text
+
+  // Rheumatic diseases
+  hasRheumaticDisease Boolean  @default(false)
+  rheumatoidArthritis Boolean  @default(false)
+  collagenosis        Boolean  @default(false)
+  otherRheumaticConditions String? @db.Text
+
+  // Skeletal diseases
+  hasSkeletalDisease  Boolean  @default(false)
+  osteoporosis        Boolean  @default(false)
+  otherSkeletalConditions String? @db.Text
+
+  // Neurological diseases
+  hasNeurologicalDisease Boolean @default(false)
+  epilepsy            Boolean  @default(false)
+  otherNeurologicalConditions String? @db.Text
+
+  // Psychiatric diseases
+  hasPsychiatricDisease Boolean @default(false)
+  depression          Boolean  @default(false)
+  schizophrenia       Boolean  @default(false)
+  otherPsychiatricConditions String? @db.Text
+
+  // Neuro-vegetative manifestations
+  panicAttacks        Boolean  @default(false)
+
+  // Hematological diseases
+  hasHematologicalDisease Boolean @default(false)
+  anemia              Boolean  @default(false)
+  thalassemia         Boolean  @default(false)
+  acuteLeukemia       Boolean  @default(false)
+  chronicLeukemia     Boolean  @default(false)
+  hemophilia          Boolean  @default(false)
+  thrombocytopenia    Boolean  @default(false)
+  vonWillebrandDisease Boolean @default(false)
+  otherHematologicalConditions String? @db.Text
+
+  // Infectious diseases
+  hasInfectiousDisease Boolean @default(false)
+  hepatitisB          Boolean  @default(false)
+  hepatitisC          Boolean  @default(false)
+  hepatitisD          Boolean  @default(false)
+  hiv                 Boolean  @default(false)
+  otherInfectiousConditions String? @db.Text
+
+  // Neoplasms
+  hasNeoplasm         Boolean  @default(false)
+  neoplasmDetails     String?  @db.Text
+
+  // Other diseases
+  otherDiseases       String?  @db.Text
+
+  // === SECTION 5: Previous Surgeries ===
+  hadPreviousSurgery  Boolean  @default(false)
+  surgeryDetails      String?  @db.Text
+  surgeryAnesthesiaType AnesthesiaType?
+  surgeryComplications Boolean @default(false)
+  surgeryComplicationsDetails String? @db.Text
+
+  // Blood transfusions
+  hadBloodTransfusion Boolean  @default(false)
+
+  // === SECTION 6: Previous Dental Treatments ===
+  hadDentalTreatment  Boolean  @default(false)
+  dentalAnesthesiaType DentalAnesthesiaType?
+  dentalComplications Boolean  @default(false)
+  dentalComplicationsType DentalComplicationType?
+  dentalComplicationsDetails String?
+
+  // === SECTION 7: Substance Use ===
+  tobaccoUse          Boolean  @default(false)
+  tobaccoDetails      String?  @db.Text
+
+  alcoholUse          Boolean  @default(false)
+  alcoholDetails      String?  @db.Text
+  alcoholWithdrawalIssues String? @db.Text
+
+  drugUse             Boolean  @default(false)
+  drugDetails         String?  @db.Text
+
+  // === Declaration ===
+  declarationSigned   Boolean  @default(false)
+  declarationDate     DateTime?
+  declarationSignature String? // Can store base64 signature image
+
+  // === Additional Notes (for doctor) ===
+  doctorNotes         String?  @db.Text
+  riskAssessment      RiskLevel?
+
+  // Archiving
+  isArchived          Boolean  @default(false)
+  archivedAt          DateTime?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([evaluationDate])
+  @@index([evaluationType])
+}
+
+// ============== Enums ==============
+
+enum DeclarantType {
+  PATIENT
+  LEGAL_REPRESENTATIVE
+  FAMILY_MEMBER
+}
+
+enum BisphosphonateRoute {
+  INTRAVENOUS
+  ORAL
+}
+
+enum AnesthesiaType {
+  LOCAL_REGIONAL
+  SEDATION
+  GENERAL
+  OTHER
+}
+
+enum DentalAnesthesiaType {
+  NONE
+  LOCAL
+  LOCAL_WITH_INHALATION_SEDATION
+  LOCAL_WITH_IV_SEDATION
+  GENERAL
+}
+
+enum DentalComplicationType {
+  FAINTING
+  NAUSEA
+  ALLERGY
+  OTHER
+}
+
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+}
+
+// ============== GDPR Compliance & Audit ==============
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  clinicId        String
+  clinic          Clinic   @relation(fields: [clinicId], references: [id])
+
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+
+  action          AuditAction
+  entityType      String   // Patient, MedicalEvaluation, User, etc.
+  entityId        String
+
+  changes         String?  @db.Text // JSON of what changed
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime @default(now())
+
+  @@index([clinicId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  EXPORT
+  PRINT
+  LOGIN
+  LOGOUT
+}
