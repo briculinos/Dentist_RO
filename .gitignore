@@ -65,3 +65,8 @@ temp/
 # Backups
 *.sql
 backup_*/
+
+# SSL Certificates and Nginx runtime
+certbot/
+nginx/nginx.conf
+!nginx-templates/
