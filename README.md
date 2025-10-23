@@ -1,18 +1,18 @@
-# 📋 Sistem Evaluare Medicală Pre-operatorie
+# Sistem Evaluare Medicală Pre-operatorie
 
 Un sistem modern, securizat și conform GDPR pentru evaluarea medicală a pacienților înainte de intervenții chirurgicale stomatologice și de altă natură.
 
-## 🌟 Caracteristici principale
+## Caracteristici principale
 
-- ✅ **Interfață optimizată pentru tablete** - Text mare, butoane accesibile, perfectă pentru tablete Android ieftine
-- ✅ **UX pentru vârstnici** - Design simplu, clar, ușor de folosit
-- ✅ **Multi-tenant** - Suport pentru multiple clinici
-- ✅ **GDPR compliant** - Consimțământ, audit logs, criptare date
-- ✅ **Căutare avansată** - După nume, prenume, CNP
-- ✅ **Arhivare** - Sistem complet de arhivare cu export
-- ✅ **Formulare complete** - Toate secțiunile din chestionarul medical standard
+- **Interfață optimizată pentru tablete** - Text mare, butoane accesibile, perfectă pentru tablete Android ieftine
+- **UX pentru vârstnici** - Design simplu, clar, ușor de folosit
+- **Multi-tenant** - Suport pentru multiple clinici
+- **GDPR compliant** - Consimțământ, audit logs, criptare date
+- **Căutare avansată** - După nume, prenume, CNP
+- **Arhivare** - Sistem complet de arhivare cu export
+- **Formulare complete** - Toate secțiunile din chestionarul medical standard
 
-## 🏗️ Arhitectură
+## Arhitectură
 
 ### Backend
 - **Node.js** + **Express** - Server API RESTful
@@ -32,7 +32,7 @@ Un sistem modern, securizat și conform GDPR pentru evaluarea medicală a pacien
 - **Docker** + **Docker Compose** - Deployment ușor pe server local
 - **Nginx** - Reverse proxy pentru frontend
 
-## 🚀 Instalare și configurare
+## Instalare și configurare
 
 ### Prerequisite
 
@@ -85,9 +85,9 @@ După seed, poți te autentifica cu:
 - Email: `doctor@clinica.ro`
 - Parolă: `admin123`
 
-⚠️ **IMPORTANT:** Schimbă aceste parole imediat după prima autentificare!
+**IMPORTANT:** Schimbă aceste parole imediat după prima autentificare!
 
-## 📱 Configurare tabletă Android
+## Configurare tabletă Android
 
 ### Recomandări hardware
 - **RAM:** Minim 2GB
@@ -113,28 +113,28 @@ După seed, poți te autentifica cu:
    - Adaugă la ecranul principal (Add to Home Screen)
    - Activează mod offline în browser
 
-## 🔒 Securitate și GDPR
+## Securitate și GDPR
 
 ### Măsuri de securitate implementate
 
-- ✅ Autentificare JWT cu expirare
-- ✅ Parole criptate cu bcrypt
-- ✅ Rate limiting pe API
-- ✅ Helmet.js pentru securitate HTTP
-- ✅ CORS configurat
-- ✅ Input validation
-- ✅ SQL injection prevention (Prisma ORM)
+- Autentificare JWT cu expirare
+- Parole criptate cu bcrypt
+- Rate limiting pe API
+- Helmet.js pentru securitate HTTP
+- CORS configurat
+- Input validation
+- SQL injection prevention (Prisma ORM)
 
 ### Conformitate GDPR
 
-- ✅ Consimțământ explicit pacient
-- ✅ Audit logs pentru toate operațiunile
-- ✅ Dreptul la ștergere (soft delete)
-- ✅ Export date personale
-- ✅ Informații despre controller de date
-- ✅ Notificări privind prelucarea datelor
+- Consimțământ explicit pacient
+- Audit logs pentru toate operațiunile
+- Dreptul la ștergere (soft delete)
+- Export date personale
+- Informații despre controller de date
+- Notificări privind prelucarea datelor
 
-## 📚 Utilizare
+## Utilizare
 
 ### 1. Adăugare pacient nou
 1. Click pe "Pacient nou"
@@ -162,7 +162,7 @@ După seed, poți te autentifica cu:
 - Arhivează dosare vechi
 - Export pentru arhivare oficială
 
-## 🛠️ Development local (fără Docker)
+## Development local (fără Docker)
 
 ### Backend
 
@@ -201,7 +201,7 @@ npm install
 npm run dev
 ```
 
-## 📊 Structura bazei de date
+## Structura bazei de date
 
 ### Modele principale
 
@@ -211,7 +211,7 @@ npm run dev
 - **MedicalEvaluation** - Evaluări medicale complete
 - **AuditLog** - Jurnalizare operațiuni (GDPR)
 
-## 🔄 Backup și restore
+## Backup și restore
 
 ### Backup bază de date
 
@@ -225,7 +225,7 @@ docker-compose exec postgres pg_dump -U postgres medical_evaluation > backup_$(d
 docker-compose exec -T postgres psql -U postgres medical_evaluation < backup_20240101.sql
 ```
 
-## 📈 Extensii viitoare
+## Extensii viitoare
 
 ### În dezvoltare
 - [ ] Export PDF complet pentru evaluări
@@ -240,7 +240,7 @@ docker-compose exec -T postgres psql -U postgres medical_evaluation < backup_202
 - [ ] OCR pentru scanare documente
 - [ ] Integrare cu CNAS/CAS
 
-## 🐛 Depanare
+## Depanare
 
 ### Aplicația nu pornește
 
@@ -272,17 +272,17 @@ ports:
   - "8080:80"  # în loc de 3000:80
 ```
 
-## 📞 Suport
+## Suport
 
 Pentru probleme sau întrebări:
 1. Verifică această documentație
 2. Caută în Issues pe GitHub
 3. Contactează echipa de dezvoltare
 
-## 📄 Licență
+## Licență
 
 Acest proiect este dezvoltat pentru uz medical și trebuie folosit conform legislației în vigoare privind datele medicale și GDPR.
 
 ---
 
-**Dezvoltat cu ❤️ pentru medicii din România**
+**Dezvoltat pentru medicii din România**
