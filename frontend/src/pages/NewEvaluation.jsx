@@ -32,6 +32,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { patientsAPI, evaluationsAPI } from '../services/api';
+import SignatureCanvas from '../components/SignatureCanvas';
 
 export default function NewEvaluation() {
   const { patientId } = useParams();
@@ -235,6 +236,7 @@ export default function NewEvaluation() {
 
     // Declaration
     declarationSigned: false,
+    declarationSignature: '',
     doctorNotes: '',
   });
 
@@ -283,6 +285,11 @@ export default function NewEvaluation() {
   const handleSubmit = async () => {
     if (!formData.declarationSigned) {
       setError('Declarația trebuie semnată');
+      return;
+    }
+
+    if (!formData.declarationSignature) {
+      setError('Semnătura este obligatorie');
       return;
     }
 
@@ -2036,6 +2043,16 @@ export default function NewEvaluation() {
                 Confirm și semnez declarația
               </Typography>
             }
+          />
+        </CardContent>
+      </Card>
+
+      <Card elevation={2} sx={{ mt: 3, bgcolor: 'warning.light' }}>
+        <CardContent sx={{ p: 3 }}>
+          <SignatureCanvas
+            value={formData.declarationSignature}
+            onChange={(signature) => handleChange('declarationSignature', signature)}
+            required={true}
           />
         </CardContent>
       </Card>

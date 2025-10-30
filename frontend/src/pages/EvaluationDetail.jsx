@@ -1147,6 +1147,30 @@ export default function EvaluationDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Signature */}
+            {evaluation.declarationSignature && (
+              <Card elevation={2} sx={{ mt: 3, bgcolor: 'warning.light' }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Semnătură
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={evaluation.declarationSignature}
+                    alt="Semnătură pacient"
+                    sx={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      border: '2px solid',
+                      borderColor: 'primary.main',
+                      borderRadius: 1,
+                      bgcolor: 'white',
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </Box>
         </CardContent>
       </Card>
